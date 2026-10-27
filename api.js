@@ -23,9 +23,10 @@ export async function getAllPosts() {
         }
 
         const data = await response.json();
-        localStorage.setItem("posts", JSON.stringify(data.posts));
+        const posts = data.posts;
+        localStorage.setItem("posts", JSON.stringify(posts));
 
-        return data.posts;
+        return posts;
 
     } catch (error) {
         console.log("Error fetching posts:", error);
@@ -87,7 +88,7 @@ export async function deletePost(id) {
     }
 }
 
-// // post.html
+// post.html
 export async function getPost(id) {
     try {
         const response = await fetch(`${postsUrl}/${id}`);
@@ -101,5 +102,69 @@ export async function getPost(id) {
         throw error;
     }
 }
-// export function getComments(postId) {} // GET
-// export function updatePost(id, data) {} // PUT (eller PATCH)
+
+export async function editPost(postId, post) {
+    try {
+        const response = await fetch(`${postsUrl}/${postId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(post),
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP-fel: ${response.status}`);
+        }
+        const editedPost = await response.json();
+        return editedPost;
+    } catch (error) {
+        console.log("Error editing post:", error);
+        throw error;
+    }
+}
+
+
+export async function getComments(postId) {
+    try {
+        const response = await fetch(`${postsUrl}/${postId}/comments`);
+        if (!response.ok) {
+            throw new Error(`HTTP-fel: ${response.status}`);
+        }
+        const data = await response.json();
+        const comments = data.comments;
+        return comments;
+    } catch (error) {
+        console.log("Error getting comments:", error);
+        throw error;
+    }
+}
+export async function addComment(commentText, postId) {
+    try {
+        const response = await fetch(`${commentsUrl}/add`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                body: commentText,
+                userId,
+                postId
+            }),
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP-fel: ${response.status}`);
+        }
+        const addedComment = await response.json();
+        return addedComment;
+    } catch (error) {
+        console.log("Error adding comment:", error);
+        throw error;
+    }
+}
+
+
+//TODO nästa gång:
+// Felmeddelande för användaren i gränssnittet vid api anropen
+// Kan jag spara mer till lokal storage och använda? t.ex. kanske jag borde uppdatera posts på index sidan när jag redigerar rubrik och innehåll?
+// Kollar alla HTTP anrop med reesponse.ok? (krav för g)
+// ÄR alla hanteringar med try/catch throw error rätt?
+// Är det responsivt mobil, padda, desktop?fixa lite i CSS så de blir snyggare med formulären och stilen överlag
+// Kolla kraven för VG och fixa dem
+// Kolla hur vi löst liknande upgifter i skolan om de finns bättre sätt att göra saker på. har jag async/await rätt
+// Läs på mer om destructuring och hur man kan använda det i JavaScript

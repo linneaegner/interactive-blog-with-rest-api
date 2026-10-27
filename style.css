@@ -72,6 +72,10 @@ footer {
     align-items: center;
 }
 
+.hidden {
+    display: none;
+}
+
 @media (min-width: 768px) {
     .grid-1-2-3 {
         grid-template-columns: repeat(2, 1fr);
