@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,12 +8,34 @@
     <link rel="stylesheet" href="style.css">
     <script src="post.js" type="module"></script>
 </head>
+
 <body>
-    <div id="post-container">
-        <h1 id="post-title"></h1>
-        <p id="post-body"></p>
-        <h2 id="comments-title">Comments</h2>
-        <div id="comments-container"></div>
-    </div>
+    <header>
+        <p class="header-text">Welcome to this blog</p>
+        <a href="index.html" class="back-link">Back to all posts</a>
+    </header>
+
+
+    <main class="container">
+        <article id="post-container">
+            <h1 class="margin-2rem" id="post-title">Post title</h1>
+            <p id="post-body">lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+        </article>
+
+        <section>
+            <h2 class="margin-2rem" id="comments-title">Comments</h2>
+            <div id="comments-container">
+                <p>Comment 1</p>
+                <p>Comment 2</p>
+                <p>Comment 3</p>
+            </div>
+        </section>
+    </main>
+
+
+    <footer>
+        <p>Copyright 2026</p>
+    </footer>
 </body>
+
 </html>

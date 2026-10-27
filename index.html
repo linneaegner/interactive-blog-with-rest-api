@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,8 +8,38 @@
     <link rel="stylesheet" href="style.css">
     <script src="script.js" type="module"></script>
 </head>
+
 <body>
-    <h1>All blogposts</h1>
-    <div id="posts-container"></div>
+    <header>
+        <p class="header-text">Welcome to this blog</p>
+    </header>
+
+
+    <main class="container">
+        <section>
+            <h1 class="margin-2rem">All blogposts</h1>
+            <div id="posts-catalog" class="grid-1-2-3"></div>
+        </section>
+
+
+        <section>
+            <h2 class="margin-2rem">Add a new post</h2>
+            <form id="add-post-form">
+                <label for="title">Add your title</label>
+                <input type="text" name="title" id="title" placeholder="Title">
+
+                <label for="body">Add your body</label>
+                <textarea name="body" id="body" placeholder="Body"></textarea>
+
+                <button type="submit">Add your post</button>
+            </form>
+        </section>
+    </main>
+
+
+    <footer>
+        <p>Copyright 2026</p>
+    </footer>
 </body>
+
 </html>
