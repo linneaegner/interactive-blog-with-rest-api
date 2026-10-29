@@ -5,7 +5,7 @@ const postsCatalog = document.getElementById("posts-catalog");
 const addPostForm = document.getElementById("add-post-form");
 
 function createPostCard(post) {
-    const postCard = document.createElement("div");
+    const postCard = document.createElement("article");
     postCard.classList.add("post");
     postCard.innerHTML = `
         <h3 class="post-title">${post.title || "Unknown Title"}</h3>
