@@ -4,7 +4,6 @@ let posts = [];
 const postsCatalog = document.getElementById("posts-catalog");
 const addPostForm = document.getElementById("add-post-form");
 
-
 function createPostCard(post) {
     const postCard = document.createElement("div");
     postCard.classList.add("post");
@@ -15,8 +14,11 @@ function createPostCard(post) {
             <p class="post-reaction-button like-button">👍 ${post.reactions.likes || 0}</p>
             <p class="post-reaction-button dislike-button">👎 ${post.reactions.dislikes || 0}</p>
         </div>
-        <button class="delete-post-button">Delete</button>
-        <a href="post.html?postId=${post.id}" class="view-post-link">Read more</a>
+        <div class="post-footer">
+            <a href="post.html?postId=${post.id}" class="view-post-link">Read more</a>
+            <button class="delete-post-button">Delete</button>
+        </div>
+        <p class="delete-post-error-message hidden error-message">Could not delete post</p>
     `;
     return postCard;
 }
@@ -28,6 +30,7 @@ function renderPosts(postsToRender) {
         postsCatalog.appendChild(postCard);
 
         const deletePostButton = postCard.querySelector(".delete-post-button");
+
         deletePostButton.addEventListener("click", async () => {
             const postId = post.id;
 
@@ -36,7 +39,11 @@ function renderPosts(postsToRender) {
                 posts = posts.filter(post => post.id !== postId);
                 postCard.remove();
             } catch (error) {
-                // Fixa så användaren får ett meddelande
+                const deletePostError = postCard.querySelector(".delete-post-error-message");
+                deletePostError.classList.remove("hidden");
+                setTimeout(() => {
+                    deletePostError.classList.add("hidden");
+                }, 3000);
             }
         });
 
@@ -47,17 +54,21 @@ addPostForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const formData = new FormData(addPostForm);
-    const post = Object.fromEntries(formData);
+    const postContent = Object.fromEntries(formData);
 
     try {
-        const newPost = await addPost(post);
+        const newPost = await addPost(postContent);
         posts.push(newPost);
 
         renderPosts(posts);
 
         addPostForm.reset();
     } catch (error) {
-        // Fixa så användaren får ett meddelande
+        const addPostError = document.getElementById("add-post-error-message");
+        addPostError.classList.remove("hidden");
+        setTimeout(() => {
+            addPostError.classList.add("hidden");
+        }, 3000);
     }
 });
 
@@ -67,7 +78,7 @@ async function start() {
         posts = await getAllPosts();
         renderPosts(posts);
     } catch (error) {
-        postsCatalog.textContent = "No posts found";
+        postsCatalog.innerHTML = "<p>Could not load posts</p>";
     }
 }
 

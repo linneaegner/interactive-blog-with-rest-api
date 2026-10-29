@@ -1,6 +1,6 @@
-import { getPost, getComments, addComment, editPost } from "./api.js";
+import { getPost, getComments, addComment, updatePost } from "./api.js";
 
-const postId = new URLSearchParams(window.location.search).get("postId");
+const postId = Number(new URLSearchParams(window.location.search).get("postId"));
 const postContainer = document.getElementById("post-container");
 const commentsContainer = document.getElementById("comments-container");
 let comments = [];
@@ -20,7 +20,9 @@ function renderPost(post) {
             <textarea name="body" id="body" placeholder="Body"></textarea>
 
             <button type="submit">Save changes</button>
+            <p id="edit-post-error-message" class="hidden error-message"></p>
         </form>
+    
 
     `;
 
@@ -33,13 +35,27 @@ function renderPost(post) {
         e.preventDefault();
 
         const formData = new FormData(editPostForm);
-        const post = Object.fromEntries(formData);
+        const postUpdates = Object.fromEntries(formData);
+        const editPostError = document.getElementById("edit-post-error-message");
+        if (postUpdates.title === "" && postUpdates.body === "") {
+            editPostError.textContent = "Fill in at least one field to edit the post";
+            editPostError.classList.remove("hidden");
+            setTimeout(() => {
+                editPostError.classList.add("hidden");
+            }, 3000);
+            return;
+        }
+
         try {
-            const editedPost = await editPost(postId, post);
+            const editedPost = await updatePost(postId, postUpdates);
             editPostForm.classList.add("hidden");
             renderPost(editedPost);
         } catch (error) {
-            // Felmeddelande för användarenn
+            editPostError.textContent = "Could not edit post";
+            editPostError.classList.remove("hidden");
+            setTimeout(() => {
+                editPostError.classList.add("hidden");
+            }, 3000);
         }
     });
 
@@ -63,6 +79,7 @@ function renderComments(comments) {
         <form id="comment-form">
             <textarea name="body" placeholder="Add a comment"></textarea>
             <button type="submit">Add comment</button>
+            <p id="add-comment-error-message" class="hidden error-message">Could not add comment</p>
         </form>
     `;
 
@@ -85,20 +102,31 @@ function renderComments(comments) {
             comments.push(addedComment);
             renderComments(comments);
         } catch (error) {
-            console.error("Error adding comment:", error);
+            const addCommentError = document.getElementById("add-comment-error-message");
+            addCommentError.classList.remove("hidden");
+            setTimeout(() => {
+                addCommentError.classList.add("hidden");
+                }, 3000);
         }
     });
 }
 
 
 async function start() {
+
     try {
         const post = await getPost(postId);
-        comments = await getComments(postId);
         renderPost(post);
+    } catch (error) {
+        postContainer.innerHTML = `<p> Could not load post details</p>`;
+        return;
+    }
+
+    try {
+        comments = await getComments(postId);
         renderComments(comments);
     } catch (error) {
-        postContainer.textContent = "Post not found";
+        commentsContainer.innerHTML = `<p> Could not load postcomments</p>`;
     }
 }
 

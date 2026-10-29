@@ -57,6 +57,12 @@ main {
     gap: 1rem;
 }
 
+.post-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
 form#add-post-form {
     display: flex;
     flex-direction: column;
@@ -74,6 +80,10 @@ footer {
 
 .hidden {
     display: none;
+}
+
+.error-message {
+    color: red;
 }
 
 @media (min-width: 768px) {

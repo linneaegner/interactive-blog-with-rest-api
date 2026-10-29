@@ -6,14 +6,26 @@ const commentsUrl = "https://dummyjson.com/comments";
 
 
 
-
-// index.html
-export async function getAllPosts() {
+function getPostsFromLocalStorage() {
     const storedPosts = localStorage.getItem("posts");
-
     if (storedPosts) {
         return JSON.parse(storedPosts);
     }
+    return [];
+}
+
+function savePostsToLocalStorage(posts) {
+    localStorage.setItem("posts", JSON.stringify(posts));
+}
+
+
+// index.html
+export async function getAllPosts() {
+    const postsFromStorage = getPostsFromLocalStorage();
+    if (postsFromStorage.length > 0) {
+        return postsFromStorage;
+    }
+
 
     try {
         const response = await fetch(`${postsUrl}?limit=${limit}`);
@@ -23,10 +35,10 @@ export async function getAllPosts() {
         }
 
         const data = await response.json();
-        const posts = data.posts;
-        localStorage.setItem("posts", JSON.stringify(posts));
+        const postsFromApi = data.posts;
+        savePostsToLocalStorage(postsFromApi);
 
-        return posts;
+        return postsFromApi;
 
     } catch (error) {
         console.log("Error fetching posts:", error);
@@ -34,13 +46,13 @@ export async function getAllPosts() {
     }
 }
 
-export async function addPost(post) {
+export async function addPost(postContent) {
     try {
         const response = await fetch(`${postsUrl}/add`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                ...post,
+                ...postContent,
                 userId,
                 reactions: { likes: 0, dislikes: 0 },
             }),
@@ -52,9 +64,9 @@ export async function addPost(post) {
 
         const newPost = await response.json();
 
-        const posts = JSON.parse(localStorage.getItem("posts")) || [];
-        posts.push(newPost);
-        localStorage.setItem("posts", JSON.stringify(posts));
+        const postsFromStorage = getPostsFromLocalStorage();
+        const updatedPosts = [...postsFromStorage, newPost];
+        savePostsToLocalStorage(updatedPosts);
 
 
         return newPost;
@@ -65,9 +77,9 @@ export async function addPost(post) {
         throw error;
     }
 }
-export async function deletePost(id) {
+export async function deletePost(postId) {
     try {
-        const response = await fetch(`${postsUrl}/${id}`, {
+        const response = await fetch(`${postsUrl}/${postId}`, {
             method: 'DELETE',
         });
 
@@ -77,9 +89,9 @@ export async function deletePost(id) {
 
         const deletedPost = await response.json();
 
-        const posts = JSON.parse(localStorage.getItem("posts")) || [];
-        const updatedPosts = posts.filter(post => post.id !== id);
-        localStorage.setItem("posts", JSON.stringify(updatedPosts));
+        const postsFromStorage = getPostsFromLocalStorage();
+        const updatedPosts = postsFromStorage.filter(post => post.id !== postId);
+        savePostsToLocalStorage(updatedPosts);
 
         return deletedPost;
     } catch (error) {
@@ -89,36 +101,58 @@ export async function deletePost(id) {
 }
 
 // post.html
-export async function getPost(id) {
+export async function getPost(postId) {
+    const postsFromStorage = getPostsFromLocalStorage();
+    const postFromStorage = postsFromStorage.find(post => post.id === postId);
+    if (postFromStorage) {
+        return postFromStorage;
+    }
+
     try {
-        const response = await fetch(`${postsUrl}/${id}`);
+        const response = await fetch(`${postsUrl}/${postId}`);
         if (!response.ok) {
             throw new Error(`HTTP-fel: ${response.status}`);
         }
-        const post = await response.json();
-        return post;
+        const postFromApi = await response.json();
+        return postFromApi;
     } catch (error) {
         console.log("Error getting post:", error);
         throw error;
     }
 }
 
-export async function editPost(postId, post) {
+export async function updatePost(postId, postUpdates) {
+    const bodyToSend = {};
+    if (postUpdates.title !== "") bodyToSend.title = postUpdates.title;
+    if (postUpdates.body !== "") bodyToSend.body = postUpdates.body;
+
+    const method = (bodyToSend.title && bodyToSend.body) ? "PUT" : "PATCH";
+
     try {
-        const response = await fetch(`${postsUrl}/${postId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(post),
-        });
-        if (!response.ok) {
-            throw new Error(`HTTP-fel: ${response.status}`);
+            const response = await fetch(`${postsUrl}/${postId}`, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(bodyToSend),
+            });
+            console.log(bodyToSend)
+            console.log(method)
+            if (!response.ok) {
+                throw new Error(`HTTP-fel: ${response.status}`);
+            }
+            const editedPost = await response.json();
+            console.log("editedPost", editedPost);
+
+            const postsFromStorage = getPostsFromLocalStorage();
+            
+            const updatedPosts = postsFromStorage.map(post => post.id === postId ? editedPost : post);
+            savePostsToLocalStorage(updatedPosts);
+            
+
+            return editedPost;
+        } catch (error) {
+            console.log("Error editing post:", error);
+            throw error;
         }
-        const editedPost = await response.json();
-        return editedPost;
-    } catch (error) {
-        console.log("Error editing post:", error);
-        throw error;
-    }
 }
 
 
@@ -157,14 +191,3 @@ export async function addComment(commentText, postId) {
         throw error;
     }
 }
-
-
-//TODO nästa gång:
-// Felmeddelande för användaren i gränssnittet vid api anropen
-// Kan jag spara mer till lokal storage och använda? t.ex. kanske jag borde uppdatera posts på index sidan när jag redigerar rubrik och innehåll?
-// Kollar alla HTTP anrop med reesponse.ok? (krav för g)
-// ÄR alla hanteringar med try/catch throw error rätt?
-// Är det responsivt mobil, padda, desktop?fixa lite i CSS så de blir snyggare med formulären och stilen överlag
-// Kolla kraven för VG och fixa dem
-// Kolla hur vi löst liknande upgifter i skolan om de finns bättre sätt att göra saker på. har jag async/await rätt
-// Läs på mer om destructuring och hur man kan använda det i JavaScript
